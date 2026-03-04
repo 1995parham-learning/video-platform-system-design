@@ -13,28 +13,28 @@ Design a video platform that allows users to:
 
 ### Key Requirements
 
-| Category | Requirement |
-|----------|-------------|
-| **Functional** | Users can upload videos via a web/mobile client |
-| | Videos are transcoded into multiple resolutions (360p, 480p, 720p, 1080p) |
-| | Videos are served via adaptive bitrate streaming (HLS/DASH) |
-| | Users can set video access to public or private |
-| | Users receive real-time status updates on upload/transcode progress |
-| **Non-Functional** | Upload should handle large files (multi-GB) without backend bottleneck |
-| | Transcoding must be horizontally scalable |
-| | Video playback must have low latency globally (CDN) |
-| | System must be fault-tolerant (failed transcodes are retried) |
+| Category           | Requirement                                                               |
+| ------------------ | ------------------------------------------------------------------------- |
+| **Functional**     | Users can upload videos via a web/mobile client                           |
+|                    | Videos are transcoded into multiple resolutions (360p, 480p, 720p, 1080p) |
+|                    | Videos are served via adaptive bitrate streaming (HLS/DASH)               |
+|                    | Users can set video access to public or private                           |
+|                    | Users receive real-time status updates on upload/transcode progress       |
+| **Non-Functional** | Upload should handle large files (multi-GB) without backend bottleneck    |
+|                    | Transcoding must be horizontally scalable                                 |
+|                    | Video playback must have low latency globally (CDN)                       |
+|                    | System must be fault-tolerant (failed transcodes are retried)             |
 
 ### Back-of-the-Envelope Estimates
 
-| Metric | Estimate |
-|--------|----------|
-| DAU | 10M |
-| Uploads per day | 100K |
-| Average video size | 500 MB |
-| Daily ingress | ~50 TB |
-| Read:Write ratio | ~100:1 |
-| Peak concurrent viewers | ~1M |
+| Metric                  | Estimate |
+| ----------------------- | -------- |
+| DAU                     | 10M      |
+| Uploads per day         | 100K     |
+| Average video size      | 500 MB   |
+| Daily ingress           | ~50 TB   |
+| Read:Write ratio        | ~100:1   |
+| Peak concurrent viewers | ~1M      |
 
 ---
 
@@ -230,14 +230,14 @@ CREATE INDEX idx_videos_created_at ON videos(created_at DESC);
 
 ### 5. API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/videos` | Request upload — returns signed URL and video ID |
-| `GET` | `/videos/:id` | Get video metadata and streaming URL |
-| `GET` | `/videos?user_id=X` | List user's videos |
-| `PATCH` | `/videos/:id` | Update title, description, access |
-| `DELETE` | `/videos/:id` | Soft-delete a video |
-| `GET` | `/ws/videos/:id/status` | WebSocket for real-time transcode status |
+| Method   | Endpoint                | Description                                      |
+| -------- | ----------------------- | ------------------------------------------------ |
+| `POST`   | `/videos`               | Request upload — returns signed URL and video ID |
+| `GET`    | `/videos/:id`           | Get video metadata and streaming URL             |
+| `GET`    | `/videos?user_id=X`     | List user's videos                               |
+| `PATCH`  | `/videos/:id`           | Update title, description, access                |
+| `DELETE` | `/videos/:id`           | Soft-delete a video                              |
+| `GET`    | `/ws/videos/:id/status` | WebSocket for real-time transcode status         |
 
 ### 6. Consistency Reconciliation
 
@@ -253,15 +253,15 @@ This acts as a **safety net**, not the primary mechanism.
 
 ## Scaling Considerations
 
-| Component | Strategy |
-|-----------|----------|
-| **Backend** | Stateless, horizontally scaled behind API Gateway / load balancer |
-| **PostgreSQL** | Read replicas for query-heavy read path; partition videos table by `created_at` for large datasets |
-| **Redis** | Cache hot video metadata, user sessions; reduces DB read load |
-| **S3** | Virtually unlimited storage; use S3 lifecycle policies to move old/cold videos to cheaper tiers (Glacier) |
-| **CDN** | Edge caching for video segments; absorbs ~95% of read traffic |
-| **Workers** | Auto-scale based on RabbitMQ queue depth; spot/preemptible instances to reduce cost |
-| **RabbitMQ** | Clustered for HA; monitor queue depth for backpressure signals |
+| Component      | Strategy                                                                                                  |
+| -------------- | --------------------------------------------------------------------------------------------------------- |
+| **Backend**    | Stateless, horizontally scaled behind API Gateway / load balancer                                         |
+| **PostgreSQL** | Read replicas for query-heavy read path; partition videos table by `created_at` for large datasets        |
+| **Redis**      | Cache hot video metadata, user sessions; reduces DB read load                                             |
+| **S3**         | Virtually unlimited storage; use S3 lifecycle policies to move old/cold videos to cheaper tiers (Glacier) |
+| **CDN**        | Edge caching for video segments; absorbs ~95% of read traffic                                             |
+| **Workers**    | Auto-scale based on RabbitMQ queue depth; spot/preemptible instances to reduce cost                       |
+| **RabbitMQ**   | Clustered for HA; monitor queue depth for backpressure signals                                            |
 
 ---
 
